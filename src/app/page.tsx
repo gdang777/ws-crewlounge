@@ -1,86 +1,142 @@
-import Image from "next/image";
+import FeaturedListingCard from "../components/FeaturedListingCard";
+import Card from "../components/Card";
+import Button from "../components/Button";
+
+const featuredListings = [
+  {
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+    title: "Cozy Crashpad Near Airport",
+    location: "Toronto, ON",
+    price: "$65",
+    type: "Private Room",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=400&q=80",
+    title: "Modern Crashpad with Amenities",
+    location: "Vancouver, BC",
+    price: "$75",
+    type: "Private Room",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
+    title: "Entire Apartment for Crew",
+    location: "Calgary, AB",
+    price: "$120",
+    type: "Entire Apartment",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80",
+    title: "Lakeside Cottage with View",
+    location: "Whistler, BC",
+    price: "$250",
+    type: "Entire Cottage",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1465101178521-c1a9136a3d41?auto=format&fit=crop&w=400&q=80",
+    title: "Beachfront Condo in City",
+    location: "Vancouver, BC",
+    price: "$195",
+    type: "Condo",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=400&q=80",
+    title: "Mountain Cabin with Views",
+    location: "Banff, AB",
+    price: "$220",
+    type: "Cabin",
+  },
+];
+
+const featuredLayovers = [
+  {
+    image: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
+    city: "New York",
+    country: "USA",
+    code: "JFK",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80",
+    city: "London",
+    country: "UK",
+    code: "LHR",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1465101178521-c1a9136a3d41?auto=format&fit=crop&w=400&q=80",
+    city: "Paris",
+    country: "France",
+    code: "CDG",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+    city: "Tokyo",
+    country: "Japan",
+    code: "NRT",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80",
+    city: "Sydney",
+    country: "Australia",
+    code: "SYD",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=400&q=80",
+    city: "Delhi",
+    country: "India",
+    code: "DEL",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-col gap-16 px-4 pt-10 pb-20 max-w-7xl mx-auto">
+      {/* Hero Section */}
+      <section className="flex flex-col items-center text-center gap-6 py-8">
+        <h1 className="text-4xl sm:text-5xl font-bold text-navy mb-2">The Aviation Professional Platform</h1>
+        <p className="text-lg text-gray max-w-2xl">
+          Find crashpads, vacation rentals, layover recommendations, and gig opportunities tailored for aviation professionals across North America.
+        </p>
+        <Button className="mt-4" variant="primary">Join the Community</Button>
+      </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Featured Listings Section */}
+      <section>
+        <h2 className="text-2xl font-semibold text-navy mb-2">Featured Listings</h2>
+        <p className="text-gray mb-6">Discover top-rated crashpads and vacation properties from our community</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {featuredListings.map((listing, idx) => (
+            <FeaturedListingCard key={idx} {...listing} />
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
+        <div className="flex justify-end mt-4">
+          <Button variant="secondary">See All</Button>
+        </div>
+      </section>
+
+      {/* Featured Layovers Section */}
+      <section>
+        <h2 className="text-2xl font-semibold text-navy mb-2">Featured Layovers</h2>
+        <p className="text-gray mb-6">Discover crew-recommended spots in popular layover destinations</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+          {featuredLayovers.map((layover, idx) => (
+            <Card key={idx} className="p-0 overflow-hidden">
+              <img src={layover.image} alt={layover.city} className="w-full h-36 object-cover" />
+              <div className="p-4 flex flex-col gap-1">
+                <span className="bg-navy text-white text-xs px-2 py-0.5 rounded self-start mb-1">{layover.code}</span>
+                <h3 className="font-semibold text-lg text-navy">{layover.city}</h3>
+                <p className="text-gray text-sm">{layover.country}</p>
+                <Button className="mt-2 w-full" variant="primary">View Recommendations</Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+        <div className="flex justify-end mt-4">
+          <Button variant="secondary">See All</Button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
         </a>
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
