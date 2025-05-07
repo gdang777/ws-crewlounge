@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "./Button";
+import Link from "next/link";
 
 export default function CommunityCTASection() {
   return (
@@ -8,9 +9,16 @@ export default function CommunityCTASection() {
       <p className="text-gray mb-6 max-w-xl">
         Connect with thousands of aviation professionals, find the perfect crashpad, discover layover recommendations, or earn extra income through gigs.
       </p>
-      <div className="flex gap-3 justify-center">
-        <Button variant="primary">Browse Properties</Button>
-        <Button variant="secondary">Layover Tips</Button>
+      <div className="flex gap-3 justify-center flex-wrap">
+        <Link href="/auth/register">
+          <Button variant="primary">Join the Community</Button>
+        </Link>
+        <Link href="/properties">
+          <Button variant="secondary">Browse Properties</Button>
+        </Link>
+        <Link href="/layovers">
+          <Button variant="secondary">Layover Tips</Button>
+        </Link>
       </div>
     </section>
   );

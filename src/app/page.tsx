@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import TestimonialsSection from "../components/TestimonialsSection";
 import FeaturesSection from "../components/FeaturesSection";
 import CommunityCTASection from "../components/CommunityCTASection";
+import Link from "next/link";
 
 
 const featuredListings = [
@@ -104,11 +105,13 @@ export default function Home() {
         <div className="relative z-10 flex flex-col items-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-navy mb-2 drop-shadow-md">The Aviation Professional Platform</h1>
           <p className="text-lg text-gray-700 max-w-2xl mb-4 drop-shadow">Find crashpads, vacation rentals, layover recommendations, and gig opportunities tailored for aviation professionals across North America.</p>
-          <button 
-            className="mt-6 text-lg px-8 py-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded" 
-          >
-            Join the Community
-          </button>
+          <Link href="/auth/register">
+            <button 
+              className="mt-6 text-lg px-8 py-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded" 
+            >
+              Join the Community
+            </button>
+          </Link>
         </div>
       </section>
 
