@@ -4,9 +4,10 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
+import { FiAlertTriangle, FiCheckCircle, FiXCircle, FiUpload } from 'react-icons/fi';
 
 export default function Dashboard() {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, isApproved, canAddListings } = useAuth();
   const router = useRouter();
 
   // Redirect to login if not authenticated
@@ -42,14 +43,81 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="flex space-x-3">
-              <Link href="/properties/new" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Add Property
-              </Link>
-              <Link href="/gigs/new" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                Post Gig
-              </Link>
+              {canAddListings ? (
+                <>
+                  <Link href="/properties/new" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Add Property
+                  </Link>
+                  <Link href="/gigs/new" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Post Gig
+                  </Link>
+                </>
+              ) : (
+                <button disabled className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-400 cursor-not-allowed">
+                  Listings Unavailable
+                </button>
+              )}
             </div>
           </div>
+          {/* Approval Status Banner */}
+          {user.status === 'pending' && (
+            <div className="bg-yellow-50 border-t border-b border-yellow-200 px-4 py-3">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <FiAlertTriangle className="h-5 w-5 text-yellow-600" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">Account Pending Approval</h3>
+                  <div className="mt-1 text-sm text-yellow-700">
+                    <p>
+                      Your account is currently awaiting admin verification. You'll be able to add listings once your airline employment is verified.
+                    </p>
+                  </div>
+                  <div className="mt-2">
+                    <div className="-mx-2 -my-1.5 flex">
+                      <button
+                        type="button"
+                        className="ml-3 bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-600"
+                      >
+                        <span className="flex items-center">
+                          <FiUpload className="mr-1" />
+                          Upload Additional Verification
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {user.status === 'approved' && (
+            <div className="bg-green-50 border-t border-b border-green-200 px-4 py-3">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <FiCheckCircle className="h-5 w-5 text-green-600" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-green-800">Your account has been verified and approved.</p>
+                </div>
+              </div>
+            </div>
+          )}
+          {user.status === 'rejected' && (
+            <div className="bg-red-50 border-t border-b border-red-200 px-4 py-3">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <FiXCircle className="h-5 w-5 text-red-600" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Verification Rejected</h3>
+                  <div className="mt-1 text-sm text-red-700">
+                    <p>Your account verification was not approved. Please contact support for more information.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="border-t border-gray-200">
             <dl>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -75,6 +143,21 @@ export default function Dashboard() {
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                   {user.role === 'host' ? 'Property Host' : 
                    user.role === 'employer' ? 'Employer' : 'Crew Member'}
+                </dd>
+              </div>
+              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className="text-sm font-medium text-gray-500">
+                  Account Status
+                </dt>
+                <dd className="mt-1 text-sm sm:mt-0 sm:col-span-2">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.status === 'approved' ? 'bg-green-100 text-green-800' : user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                    {user.status === 'approved' ? 'Approved' : user.status === 'pending' ? 'Pending Verification' : 'Rejected'}
+                  </span>
+                  {user.status === 'pending' && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Your account is pending admin verification of your airline employment.
+                    </p>
+                  )}
                 </dd>
               </div>
               {user.airline && (

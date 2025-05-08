@@ -17,6 +17,8 @@ export default function RegisterPage() {
   });
   
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [verificationFile, setVerificationFile] = useState<File | null>(null);
+  const [showVerificationInfo, setShowVerificationInfo] = useState(false);
   
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +78,12 @@ export default function RegisterPage() {
       return;
     }
     
+    // Check if verification document is required and provided
+    if ((formData.role === 'host' || formData.airline) && !verificationFile) {
+      setError('Please upload a verification document to prove your airline employment');
+      return;
+    }
+    
     setError('');
     setIsLoading(true);
     
@@ -86,8 +94,21 @@ export default function RegisterPage() {
         password: formData.password,
         role: formData.role,
         airline: formData.airline,
-        position: formData.position
+        position: formData.position,
+        status: 'pending' // All new users start with pending status
       });
+      
+      // If there's a verification file, upload it
+      if (verificationFile) {
+        try {
+          // This would call the uploadVerificationDocument function from AuthContext
+          // For now, we'll just log it
+          console.log('Would upload verification file:', verificationFile.name);
+        } catch (uploadErr) {
+          console.error('Error uploading verification document:', uploadErr);
+          // Continue with registration even if document upload fails
+        }
+      }
       
       router.push('/dashboard');
     } catch (err: any) {
@@ -321,7 +342,13 @@ export default function RegisterPage() {
                 name="role"
                 required
                 value={formData.role}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  // Show verification info if host role is selected
+                  if (e.target.value === 'host') {
+                    setShowVerificationInfo(true);
+                  }
+                }}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
               >
                 <option value="user">Crew Member</option>
@@ -336,7 +363,13 @@ export default function RegisterPage() {
                 name="airline"
                 type="text"
                 value={formData.airline}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  // Show verification info if airline is entered
+                  if (e.target.value) {
+                    setShowVerificationInfo(true);
+                  }
+                }}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Airline (optional)"
               />
@@ -349,10 +382,41 @@ export default function RegisterPage() {
                 type="text"
                 value={formData.position}
                 onChange={handleChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${!showVerificationInfo ? 'rounded-b-md' : ''} focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                 placeholder="Position (optional)"
               />
             </div>
+            
+            {/* Verification Document Section */}
+            {showVerificationInfo && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-md border border-blue-200">
+                <h3 className="text-sm font-medium text-blue-800 mb-2">Verification Required</h3>
+                <p className="text-xs text-blue-700 mb-3">
+                  To ensure the safety and integrity of our community, we require verification of your airline employment. 
+                  Your account will be in a pending state until approved by an administrator.
+                </p>
+                <div className="flex flex-col space-y-2">
+                  <label htmlFor="verification" className="text-xs font-medium text-blue-800">
+                    Upload verification document (airline ID, crew credentials, etc.)
+                  </label>
+                  <input
+                    id="verification"
+                    name="verification"
+                    type="file"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setVerificationFile(e.target.files[0]);
+                      }
+                    }}
+                    className="text-xs text-gray-700 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    accept="image/*,.pdf"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Accepted formats: JPG, PNG, PDF (max 5MB)
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex items-start mb-4">

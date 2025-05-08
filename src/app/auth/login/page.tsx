@@ -21,7 +21,8 @@ export default function LoginPage() {
     
     try {
       await login(email, password);
-      router.push('/dashboard');
+      // Redirect to home page after successful login
+      router.push('/');
     } catch (err: any) {
       setError(err.message || 'Failed to login. Please check your credentials.');
     } finally {
@@ -69,6 +70,15 @@ export default function LoginPage() {
               create a new account
             </Link>
           </p>
+          
+          {/* Mock credentials notice - remove in production */}
+          <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+            <p className="text-xs text-center text-yellow-700">
+              <strong>Demo Mode:</strong> Use these credentials to sign in<br />
+              Email: <span className="font-mono">test@example.com</span><br />
+              Password: <span className="font-mono">password</span>
+            </p>
+          </div>
         </div>
         
         {/* Social login options */}

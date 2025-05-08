@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import Card from "../../components/Card";
 import Button from "../../components/Button";
 
@@ -81,8 +82,41 @@ export default function LayoversPage() {
   const [showNearMe, setShowNearMe] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showAddCity, setShowAddCity] = useState(false);
+  const [newCity, setNewCity] = useState({
+    city: "",
+    country: "",
+    code: "",
+    image: "",
+    recommendations: 0
+  });
+  const [cities, setCities] = useState(layoverCities);
 
-  const filteredCities = layoverCities.filter(city => {
+  // Function to handle adding a new city
+  const handleAddCity = () => {
+    // Create a new city object
+    const cityToAdd = {
+      ...newCity,
+      // Ensure we have a valid image URL
+      image: newCity.image || "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?auto=format&fit=crop&w=600&q=80"
+    };
+    
+    // Add the new city to the cities array
+    setCities([...cities, cityToAdd]);
+    
+    // Reset the form
+    setNewCity({
+      city: "",
+      country: "",
+      code: "",
+      image: "",
+      recommendations: 0
+    });
+    
+    // Close the modal
+    setShowAddCity(false);
+  };
+
+  const filteredCities = cities.filter(city => {
     const q = search.toLowerCase();
     return (
       city.city.toLowerCase().includes(q) ||
@@ -165,10 +199,93 @@ export default function LayoversPage() {
       )}
       {showAddCity && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full flex flex-col gap-4">
-            <h2 className="text-lg font-semibold mb-2">Add City (Demo)</h2>
-            <p className="text-gray-500 text-sm">City creation form would go here.</p>
-            <Button variant="secondary" onClick={() => setShowAddCity(false)}>Close</Button>
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Add New Layover City</h2>
+              <button 
+                onClick={() => setShowAddCity(false)} 
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form className="space-y-4" onSubmit={(e) => {
+              e.preventDefault();
+              handleAddCity();
+            }}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">City Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. New York" 
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={newCity.city}
+                  onChange={(e) => setNewCity({...newCity, city: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. USA" 
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={newCity.country}
+                  onChange={(e) => setNewCity({...newCity, country: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Airport Code</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. JFK" 
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={newCity.code}
+                  onChange={(e) => setNewCity({...newCity, code: e.target.value.toUpperCase()})}
+                  maxLength={3}
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">City Image</label>
+                <p className="text-xs text-gray-500 mb-1">Upload an image or provide an image URL</p>
+                <div className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
+                  <svg className="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <span className="text-blue-600 font-medium text-sm">Click to upload</span>
+                  <span className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (alternative to upload)</label>
+                <input 
+                  type="url" 
+                  placeholder="https://example.com/image.jpg" 
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={newCity.image}
+                  onChange={(e) => setNewCity({...newCity, image: e.target.value})}
+                />
+              </div>
+              
+              <div className="flex justify-end pt-2">
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                  disabled={!newCity.city || !newCity.country || !newCity.code || !newCity.image}
+                >
+                  Add City
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -177,7 +294,11 @@ export default function LayoversPage() {
       <section className="px-4 py-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredCities.map((city, idx) => (
-            <div key={idx} className="bg-white rounded-lg overflow-hidden shadow-md relative transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.01] cursor-pointer">
+            <Link 
+              key={idx} 
+              href={`/layovers/${city.city.toLowerCase()}`}
+              className="bg-white rounded-lg overflow-hidden shadow-md relative transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.01] cursor-pointer"
+            >
               <div className="absolute top-2 right-2 bg-white text-xs font-bold px-2 py-1 rounded-md shadow-sm">
                 {city.code}
               </div>
@@ -187,13 +308,13 @@ export default function LayoversPage() {
                 <p className="text-gray-600 text-sm">{city.country}</p>
                 <p className="text-xs text-gray-500 mt-2 mb-3 flex items-center gap-1">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                  Explore crew recommendations
+                  <span>{city.recommendations} crew recommendations</span>
                 </p>
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors">
+                <div className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors text-center">
                   View Recommendations
-                </button>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

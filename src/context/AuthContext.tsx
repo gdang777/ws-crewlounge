@@ -11,6 +11,8 @@ interface User {
   position?: string;
   avatar?: string;
   createdAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  verificationDocuments?: string[];
 }
 
 // Define the context type
@@ -23,6 +25,9 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateProfile: (userData: any) => Promise<void>;
   isAuthenticated: boolean;
+  isApproved: boolean;
+  canAddListings: boolean;
+  uploadVerificationDocument: (file: File) => Promise<void>;
 }
 
 // Create the context with default values
@@ -35,6 +40,9 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
   updateProfile: async () => {},
   isAuthenticated: false,
+  isApproved: false,
+  canAddListings: false,
+  uploadVerificationDocument: async () => {},
 });
 
 // Custom hook to use the auth context
@@ -46,6 +54,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+  const [canAddListings, setCanAddListings] = useState(false);
 
   // Load user on initial render if token exists
   useEffect(() => {
@@ -149,6 +159,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Upload verification document for airline employment
+  const uploadVerificationDocument = async (file: File) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // This would be implemented in the authService
+      // For now, we'll just simulate the API call
+      console.log('Uploading verification document:', file.name);
+      // In a real implementation, you would upload the file to your server
+      // and update the user's verification documents
+      
+      // Simulate success
+      if (user) {
+        const updatedUser = {
+          ...user,
+          verificationDocuments: [...(user.verificationDocuments || []), 'new-document-id']
+        };
+        setUser(updatedUser);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload document');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Check if the user can add listings based on their approval status and role
+  useEffect(() => {
+    if (user) {
+      // User is approved and is either a host or admin
+      const approved = user.status === 'approved';
+      setIsApproved(approved);
+      setCanAddListings(approved && (user.role === 'host' || user.role === 'admin'));
+    } else {
+      setIsApproved(false);
+      setCanAddListings(false);
+    }
+  }, [user]);
+
   // Context value
   const value = {
     user,
@@ -159,6 +208,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logout,
     updateProfile,
     isAuthenticated,
+    isApproved,
+    canAddListings,
+    uploadVerificationDocument,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

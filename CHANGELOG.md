@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2025-05-07 18:25] - MongoDB Integration & Listing Details
+
+### Added
+- Connected application to MongoDB database for persistent data storage
+- Created backend models, controllers, and routes for layovers, recommendations, and travel tips
+- Implemented data seeding for sample layover cities and recommendations
+- Created detailed listing pages for individual recommendations with comments section
+- Added ability for users to add comments to recommendations
+- Enhanced UI with responsive design and interactive elements
+
+### Changed
+- Switched from mock data to real database connection
+- Updated API services to connect to MongoDB backend
+- Improved data structure for recommendations and travel tips
+
+## [2025-05-07 18:06] - City Recommendations & Travel Tips
+
+### Added
+- Created dynamic city detail pages for layover recommendations
+- Implemented filtering system for different recommendation types (Food, Cafés, Attractions, Stay)
+- Added Travel Tips section where users can share and view tips about cities with mood indicators
+- Implemented ability for logged-in users to add new travel tips with mood selection
+- Added functionality for users to delete their own travel tips
+- Created form for adding new layover cities with fields for city name, country, airport code, and image
+- Implemented Add Recommendation form with category selection, description, address, and image options
+- Added Crew Discount field to recommendation form and highlighted discounts on listing cards
+
+## [2025-05-07 15:48] - Airline Employment Verification System
+
+### Added
+
+- Implemented airline employment verification system
+  - Added admin approval workflow for new user registrations
+  - Created verification document upload functionality during registration
+  - Added user status indicators (pending, approved, rejected)
+  - Enhanced admin dashboard with user verification review interface
+  - Restricted listing creation to approved users only
+
 ## [2025-05-07] - Enhanced Authentication UI & UX
 
 ### Authentication Pages Improvements

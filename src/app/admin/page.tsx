@@ -1,19 +1,112 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Card from "../../components/Card";
 import Button from "../../components/Button";
+import { useAuth } from "../../context/AuthContext";
+import { FiCheckCircle, FiXCircle, FiEye, FiSearch } from "react-icons/fi";
 
+// Mock users with airline verification data
 const users = [
-  { name: "Alex Johnson", email: "alex@airline.com", role: "User", status: "Active" },
-  { name: "Jamie Lee", email: "jamie@airline.com", role: "Host", status: "Pending" },
-  { name: "Morgan Smith", email: "morgan@airline.com", role: "Admin", status: "Active" },
-  { name: "Taylor Kim", email: "taylor@airline.com", role: "User", status: "Suspended" },
+  { 
+    _id: "1", 
+    name: "Alex Johnson", 
+    email: "alex@airline.com", 
+    role: "user", 
+    status: "approved", 
+    airline: "Delta Airlines", 
+    position: "Flight Attendant",
+    verificationDocuments: ["doc1.pdf"],
+    createdAt: "2023-05-01T12:00:00Z"
+  },
+  { 
+    _id: "2", 
+    name: "Jamie Lee", 
+    email: "jamie@airline.com", 
+    role: "host", 
+    status: "pending", 
+    airline: "United Airlines", 
+    position: "Pilot",
+    verificationDocuments: ["doc2.pdf"],
+    createdAt: "2023-05-02T14:30:00Z"
+  },
+  { 
+    _id: "3", 
+    name: "Morgan Smith", 
+    email: "morgan@airline.com", 
+    role: "admin", 
+    status: "approved", 
+    airline: "American Airlines", 
+    position: "Captain",
+    verificationDocuments: ["doc3.pdf"],
+    createdAt: "2023-05-03T09:15:00Z"
+  },
+  { 
+    _id: "4", 
+    name: "Taylor Kim", 
+    email: "taylor@airline.com", 
+    role: "user", 
+    status: "rejected", 
+    airline: "Southwest Airlines", 
+    position: "Flight Engineer",
+    verificationDocuments: ["doc4.pdf"],
+    createdAt: "2023-05-04T16:45:00Z"
+  },
 ];
 
 export default function AdminPage() {
+  const { user, isAuthenticated, loading } = useAuth();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  
+  // Redirect to login if not authenticated or not admin
+  useEffect(() => {
+    if (!loading && (!isAuthenticated || (user && user.role !== 'admin'))) {
+      router.push('/auth/login');
+    }
+  }, [isAuthenticated, loading, router, user]);
+  
+  // Function to handle user approval
+  const handleApproveUser = (userId: string) => {
+    // In a real implementation, this would call an API endpoint
+    console.log(`Approving user with ID: ${userId}`);
+    // For now, we'll just update the local state
+    const updatedUsers = users.map(u => {
+      if (u._id === userId) {
+        return { ...u, status: 'approved' };
+      }
+      return u;
+    });
+    // In a real implementation, you would update the state with the API response
+    alert(`User ${selectedUser?.name} has been approved`);
+    setShowVerificationModal(false);
+  };
+  
+  // Function to handle user rejection
+  const handleRejectUser = (userId: string) => {
+    // In a real implementation, this would call an API endpoint
+    console.log(`Rejecting user with ID: ${userId}`);
+    // For now, we'll just update the local state
+    const updatedUsers = users.map(u => {
+      if (u._id === userId) {
+        return { ...u, status: 'rejected' };
+      }
+      return u;
+    });
+    // In a real implementation, you would update the state with the API response
+    alert(`User ${selectedUser?.name} has been rejected`);
+    setShowVerificationModal(false);
+  };
+  
+  // Function to open the verification modal
+  const openVerificationModal = (user: any) => {
+    setSelectedUser(user);
+    setShowVerificationModal(true);
+  };
 
   const filteredUsers = users.filter(user => {
     const q = search.toLowerCase();
@@ -21,9 +114,23 @@ export default function AdminPage() {
       user.name.toLowerCase().includes(q) ||
       user.email.toLowerCase().includes(q) ||
       user.role.toLowerCase().includes(q) ||
-      user.status.toLowerCase().includes(q)
+      user.status.toLowerCase().includes(q) ||
+      (user.airline && user.airline.toLowerCase().includes(q)) ||
+      (user.position && user.position.toLowerCase().includes(q))
     );
   });
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+  
+  if (!user || user.role !== 'admin') {
+    return null; // Will redirect in useEffect
+  }
 
   return (
     <div className="flex flex-col gap-8 pb-20 max-w-7xl mx-auto">
@@ -89,6 +196,119 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+      {showVerificationModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-3xl w-full flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-semibold mb-2 flex items-center">
+              <span role="img" aria-label="verify" className="mr-2">🔍</span> 
+              User Verification Review
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">User Information</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-500">Name</p>
+                    <p className="text-base font-medium text-gray-900">{selectedUser.name}</p>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-500">Email</p>
+                    <p className="text-base text-gray-900">{selectedUser.email}</p>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-500">Role</p>
+                    <p className="text-base text-gray-900 capitalize">{selectedUser.role}</p>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-500">Airline</p>
+                    <p className="text-base text-gray-900">{selectedUser.airline || 'Not specified'}</p>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-500">Position</p>
+                    <p className="text-base text-gray-900">{selectedUser.position || 'Not specified'}</p>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-500">Status</p>
+                    <p className={`text-base font-medium ${selectedUser.status === 'approved' ? 'text-green-600' : selectedUser.status === 'pending' ? 'text-yellow-600' : 'text-red-600'} capitalize`}>
+                      {selectedUser.status}
+                    </p>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-500">Registered On</p>
+                    <p className="text-base text-gray-900">
+                      {new Date(selectedUser.createdAt).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Verification Documents</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  {selectedUser.verificationDocuments && selectedUser.verificationDocuments.length > 0 ? (
+                    <div>
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500 mb-2">The following documents were submitted for verification:</p>
+                        <ul className="list-disc pl-5 text-sm text-gray-700">
+                          {selectedUser.verificationDocuments.map((doc: string, idx: number) => (
+                            <li key={idx} className="mb-2">
+                              <div className="flex items-center">
+                                <span className="mr-2">{doc}</span>
+                                <button className="text-blue-600 hover:text-blue-800 text-xs flex items-center">
+                                  <FiEye className="mr-1" /> View
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div className="mt-6 bg-blue-50 p-3 rounded-md">
+                        <p className="text-sm text-blue-800 font-medium mb-2">Verification Instructions</p>
+                        <ol className="list-decimal pl-5 text-xs text-blue-700">
+                          <li className="mb-1">Check that the document shows the user's full name</li>
+                          <li className="mb-1">Verify the airline name matches what the user provided</li>
+                          <li className="mb-1">Confirm the document is current and not expired</li>
+                          <li className="mb-1">Ensure the position/role is clearly indicated</li>
+                        </ol>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No verification documents have been submitted.</p>
+                  )}
+                </div>
+                
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Decision</h3>
+                  <div className="flex flex-col space-y-3">
+                    <button 
+                      onClick={() => handleApproveUser(selectedUser._id)}
+                      className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      <FiCheckCircle className="mr-2" /> Approve User
+                    </button>
+                    <button 
+                      onClick={() => handleRejectUser(selectedUser._id)}
+                      className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                      <FiXCircle className="mr-2" /> Reject Verification
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 border-t pt-4 flex justify-end">
+              <Button variant="secondary" onClick={() => setShowVerificationModal(false)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Users Table/Grid */}
       <section className="px-4">
@@ -99,16 +319,50 @@ export default function AdminPage() {
                 <th className="py-2 px-4 text-left text-xs text-gray-500 uppercase">Name</th>
                 <th className="py-2 px-4 text-left text-xs text-gray-500 uppercase">Email</th>
                 <th className="py-2 px-4 text-left text-xs text-gray-500 uppercase">Role</th>
+                <th className="py-2 px-4 text-left text-xs text-gray-500 uppercase">Airline</th>
                 <th className="py-2 px-4 text-left text-xs text-gray-500 uppercase">Status</th>
+                <th className="py-2 px-4 text-left text-xs text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((user, idx) => (
-                <tr key={idx} className="border-t">
+                <tr key={idx} className="border-t hover:bg-gray-50">
                   <td className="py-2 px-4 font-medium text-blue-900">{user.name}</td>
                   <td className="py-2 px-4 text-gray-700">{user.email}</td>
-                  <td className="py-2 px-4 text-gray-700">{user.role}</td>
-                  <td className={`py-2 px-4 text-xs font-semibold ${user.status === "Active" ? "text-green-600" : user.status === "Pending" ? "text-yellow-600" : "text-red-600"}`}>{user.status}</td>
+                  <td className="py-2 px-4 text-gray-700 capitalize">{user.role}</td>
+                  <td className="py-2 px-4 text-gray-700">{user.airline || '-'}</td>
+                  <td className={`py-2 px-4 text-xs font-semibold ${user.status === "approved" ? "text-green-600" : user.status === "pending" ? "text-yellow-600" : "text-red-600"}`}>
+                    <span className="capitalize">{user.status}</span>
+                  </td>
+                  <td className="py-2 px-4 text-gray-700">
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => openVerificationModal(user)}
+                        className="text-blue-600 hover:text-blue-800 text-xs flex items-center"
+                      >
+                        <FiSearch className="mr-1" />
+                        Review
+                      </button>
+                      {user.status === 'pending' && (
+                        <>
+                          <button 
+                            onClick={() => handleApproveUser(user._id)}
+                            className="text-green-600 hover:text-green-800 text-xs flex items-center"
+                          >
+                            <FiCheckCircle className="mr-1" />
+                            Approve
+                          </button>
+                          <button 
+                            onClick={() => handleRejectUser(user._id)}
+                            className="text-red-600 hover:text-red-800 text-xs flex items-center"
+                          >
+                            <FiXCircle className="mr-1" />
+                            Reject
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
