@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2025-05-07 19:10] - Real-time Messaging Functionality
+
+### Added
+- Implemented real-time messaging between users and property hosts
+- Created Message model, controller, and routes in the backend
+- Developed MessageModal component for contacting hosts from property details page
+- Built a complete messaging interface with conversation management
+- Added message notification indicators in the navbar
+- Implemented read/unread status tracking for messages
+
+### Changed
+- Updated the navbar to link directly to the messages page
+- Enhanced the Button component to support loading states
+- Fixed property details page navigation from property listings
+
 ## [2025-05-07 18:25] - MongoDB Integration & Listing Details
 
 ### Added

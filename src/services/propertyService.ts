@@ -32,22 +32,33 @@ const propertyService = {
   /**
    * Create a new property (requires authentication)
    */
-  async createProperty(propertyData: {
-    title: string;
-    description: string;
-    type: string;
-    category: 'crashpad' | 'vacation';
-    price: number;
-    address: string;
-    nearestAirport: string;
-    distanceToAirport: number;
-    beds: number;
-    baths: number;
-    maxGuests: number;
-    amenities?: Record<string, boolean>;
-    mainImage: string;
-  }) {
-    return api.post('/properties', propertyData, true);
+  async createProperty(propertyData: any) {
+    // Check if propertyData is FormData
+    if (propertyData instanceof FormData) {
+      // Use custom fetch for FormData
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {};
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api/v1'}/properties`, {
+        method: 'POST',
+        headers,
+        body: propertyData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `API error: ${response.status}`);
+      }
+      
+      return response.json();
+    } else {
+      // Use regular API service for JSON data
+      return api.post('/properties', propertyData, true);
+    }
   },
   
   /**

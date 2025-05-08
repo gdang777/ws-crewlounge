@@ -1,9 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useRouter } from "next/navigation";
 import Button from "../../components/Button";
+import PropertyForm from "../../components/PropertyForm";
+import AuthContext from "../../context/AuthContext";
+import propertyService from "../../services/propertyService";
 
+// Add mock IDs to the property listings for navigation
 const propertyListings = [
   {
+    _id: "mock-property-1",
     image: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?auto=format&fit=crop&w=600&q=80",
     title: "Cozy Crashpad Near YYZ Airport",
     location: "Toronto, ON",
@@ -18,6 +24,7 @@ const propertyListings = [
     wifi: true,
   },
   {
+    _id: "mock-property-2",
     image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80",
     title: "Modern Crashpad with Dedicated Workspace",
     location: "Vancouver, BC",
@@ -32,6 +39,7 @@ const propertyListings = [
     wifi: true,
   },
   {
+    _id: "mock-property-3",
     image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80",
     title: "Entire Apartment for Flight Crew",
     location: "Calgary, AB",
@@ -46,6 +54,7 @@ const propertyListings = [
     wifi: true,
   },
   {
+    _id: "mock-property-4",
     image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=600&q=80",
     title: "Shared Crashpad with Airport Shuttle",
     location: "Montreal, QC",
@@ -60,6 +69,7 @@ const propertyListings = [
     wifi: true,
   },
   {
+    _id: "mock-property-5",
     image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=600&q=80",
     title: "Quiet and Spacious Crew Stay",
     location: "Ottawa, ON",
@@ -74,6 +84,7 @@ const propertyListings = [
     wifi: true,
   },
   {
+    _id: "mock-property-6",
     image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=600&q=80",
     title: "Cozy Studio near Airport",
     location: "Halifax, NS",
@@ -90,17 +101,71 @@ const propertyListings = [
 ];
 
 export default function PropertiesPage() {
+  const router = useRouter();
+  const { user, isAuthenticated, canAddListings } = useContext(AuthContext);
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showAddProperty, setShowAddProperty] = useState(false);
   const [activeTab, setActiveTab] = useState("crashpads");
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const toggleFavorite = (idx: number) => {
     if (favorites.includes(idx)) {
       setFavorites(favorites.filter(i => i !== idx));
     } else {
       setFavorites([...favorites, idx]);
+    }
+  };
+
+  const handleAddProperty = async (propertyData: any) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Create FormData for image upload
+      const formData = new FormData();
+      
+      // Add all text fields
+      Object.keys(propertyData).forEach(key => {
+        if (key !== 'images') {
+          if (key === 'amenities') {
+            formData.append(key, JSON.stringify(propertyData[key]));
+          } else {
+            formData.append(key, propertyData[key]);
+          }
+        }
+      });
+      
+      // Add images if any
+      if (propertyData.images && propertyData.images.length > 0) {
+        propertyData.images.forEach((image: File, index: number) => {
+          formData.append(`images`, image);
+        });
+        
+        // Set the first image as main image
+        formData.append('mainImage', propertyData.images[0].name);
+      }
+      
+      // Submit to API
+      const response = await propertyService.createProperty(formData);
+      
+      // Show success message
+      setSuccessMessage('Property listing created successfully!');
+      
+      // Close the form
+      setShowAddProperty(false);
+      
+      // Reset success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error creating property:', error);
+      alert('Failed to create property. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -155,7 +220,10 @@ export default function PropertiesPage() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 17a4 4 0 01-6 0"/><path d="M12 3v4m0 0a4 4 0 004 4h4m-8-4a4 4 0 00-4 4H4m8-4V3"/></svg>
                 <span className="text-sm font-medium">Near Me</span>
               </button>
-              <button className="flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-full transition">
+              <button 
+                className="flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-full transition"
+                onClick={() => isAuthenticated ? setShowAddProperty(true) : alert('Please log in to add a property')}
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
                 <span className="text-sm font-medium">Add Property</span>
               </button>
@@ -193,12 +261,23 @@ export default function PropertiesPage() {
             </div>
           </div>
         )}
+        
+        {/* Property Form Modal */}
         {showAddProperty && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full flex flex-col gap-4">
-              <h2 className="text-lg font-semibold mb-2">Add Property (Demo)</h2>
-              <p className="text-gray-500 text-sm">Property creation form would go here.</p>
-              <Button variant="secondary" onClick={() => setShowAddProperty(false)}>Close</Button>
+          <PropertyForm 
+            onClose={() => setShowAddProperty(false)} 
+            onSubmit={handleAddProperty} 
+          />
+        )}
+        
+        {/* Success Message */}
+        {successMessage && (
+          <div className="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50 shadow-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{successMessage}</span>
             </div>
           </div>
         )}
@@ -278,7 +357,10 @@ export default function PropertiesPage() {
                     <span className="font-bold text-lg">{listing.price}</span>
                     <span className="text-gray-500 text-sm"> / night</span>
                   </div>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                  <button 
+                    onClick={() => router.push(`/properties/${listing._id}`)} 
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
+                  >
                     View Details
                   </button>
                 </div>
