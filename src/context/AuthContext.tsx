@@ -61,22 +61,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const loadUser = async () => {
       try {
-        if (authService.isAuthenticated()) {
+        const token = localStorage.getItem('token');
+        if (token) {
           setLoading(true);
           const response = await authService.getCurrentUser();
-          if (response.success) {
+          if (response.success && response.data) {
             setUser(response.data);
             setIsAuthenticated(true);
+            // Update approval status
+            setIsApproved(response.data.status === 'approved');
+            setCanAddListings(
+              response.data.status === 'approved' && 
+              (response.data.role === 'host' || response.data.role === 'admin')
+            );
           } else {
             // Token might be invalid or expired
             localStorage.removeItem('token');
             setIsAuthenticated(false);
+            setUser(null);
           }
         }
       } catch (err) {
         console.error('Error loading user:', err);
         localStorage.removeItem('token');
         setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -92,9 +101,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await authService.login({ email, password });
       if (response.success) {
-        const userResponse = await authService.getCurrentUser();
-        setUser(userResponse.data);
+        setUser(response.user);
         setIsAuthenticated(true);
+        // Update approval status
+        setIsApproved(response.user.status === 'approved');
+        setCanAddListings(
+          response.user.status === 'approved' && 
+          (response.user.role === 'host' || response.user.role === 'admin')
+        );
       } else {
         setError(response.error || 'Login failed');
       }
@@ -113,9 +127,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await authService.register(userData);
       if (response.success) {
-        const userResponse = await authService.getCurrentUser();
-        setUser(userResponse.data);
+        setUser(response.user);
         setIsAuthenticated(true);
+        // New users start with pending status
+        setIsApproved(false);
+        setCanAddListings(false);
       } else {
         setError(response.error || 'Registration failed');
       }

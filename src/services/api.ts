@@ -17,19 +17,29 @@ const DEFAULT_HEADERS = {
  * Handle API response and error checking
  */
 async function handleResponse(response: Response) {
+  const contentType = response.headers.get('content-type');
+  const isJson = contentType && contentType.includes('application/json');
+  
   if (!response.ok) {
-    // Try to get error message from response
     let errorMessage;
     try {
-      const errorData = await response.json();
-      errorMessage = errorData.error || `API error: ${response.status}`;
+      if (isJson) {
+        const errorData = await response.json();
+        errorMessage = errorData.error || `API error: ${response.status}`;
+      } else {
+        errorMessage = `API error: ${response.status}`;
+      }
     } catch (e) {
       errorMessage = `API error: ${response.status}`;
     }
     throw new Error(errorMessage);
   }
   
-  return response.json();
+  if (isJson) {
+    return response.json();
+  }
+  
+  return { success: true };
 }
 
 /**
@@ -105,6 +115,13 @@ const mockResponses: MockResponseMap = {
 };
 
 /**
+ * Get base URL for API requests
+ */
+function getBaseUrl(): string {
+  return API_BASE_URL;
+}
+
+/**
  * API service methods
  */
 const api = {
@@ -126,6 +143,7 @@ const api = {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'GET',
       headers,
+      credentials: 'include',
     });
     
     return handleResponse(response);
@@ -150,6 +168,7 @@ const api = {
       method: 'POST',
       headers,
       body: JSON.stringify(data),
+      credentials: 'include',
     });
     
     return handleResponse(response);
@@ -168,6 +187,7 @@ const api = {
       method: 'PUT',
       headers,
       body: JSON.stringify(data),
+      credentials: 'include',
     });
     
     return handleResponse(response);
@@ -185,10 +205,16 @@ const api = {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
       headers,
+      credentials: 'include',
     });
     
     return handleResponse(response);
   },
+
+  // Helper methods
+  getBaseUrl,
+  getAuthHeaders,
+  handleResponse
 };
 
 export default api;

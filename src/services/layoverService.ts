@@ -12,7 +12,12 @@ const layoverService = {
     const queryString = new URLSearchParams(params as Record<string, string>).toString();
     const endpoint = queryString ? `/layovers?${queryString}` : '/layovers';
     
-    return api.get(endpoint);
+    try {
+      const response = await api.get(endpoint);
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
   
   /**
@@ -23,43 +28,42 @@ const layoverService = {
   },
   
   /**
-   * Create a new layover (requires authentication)
+   * Create a new layover with image upload (requires authentication)
    */
-  async createLayover(layoverData: {
-    city: string;
-    country: string;
-    airport: string;
-    description: string;
-    image: string;
-    attractions?: Array<{
-      name: string;
-      description?: string;
-      distanceFromAirport?: number;
-      image?: string;
-    }>;
-    restaurants?: Array<{
-      name: string;
-      cuisine?: string;
-      priceRange?: string;
-      distanceFromAirport?: number;
-      image?: string;
-    }>;
-    hotels?: Array<{
-      name: string;
-      rating?: number;
-      priceRange?: string;
-      distanceFromAirport?: number;
-      hasCrewRates?: boolean;
-      image?: string;
-    }>;
-    transportation: string;
-    safetyTips?: string;
-    localCurrency?: string;
-    languageInfo?: string;
-    timeZone?: string;
-    bestTimeToVisit?: string;
-  }) {
-    return api.post('/layovers', layoverData, true);
+  async createLayover(layoverData: any) {
+    try {
+      const formData = new FormData();
+      
+      // Add all fields to formData
+      Object.keys(layoverData).forEach(key => {
+        if (key === 'image' && layoverData[key] instanceof File) {
+          formData.append('image', layoverData[key]);
+        } else if (layoverData[key] !== undefined && layoverData[key] !== null) {
+          formData.append(key, layoverData[key].toString());
+        }
+      });
+
+      const response = await fetch(`${api.getBaseUrl()}/layovers`, {
+        method: 'POST',
+        headers: {
+          ...api.getAuthHeaders()
+        },
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create layover');
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to create layover');
+    }
   },
   
   /**
@@ -156,6 +160,25 @@ const layoverService = {
    */
   async deleteTravelTip(layoverId: string, tipId: string) {
     return api.delete(`/layovers/${layoverId}/travelTips/${tipId}`, true);
+  },
+
+  /**
+   * Upload an image for a layover (requires authentication)
+   */
+  async uploadLayoverImage(id: string, imageFile: File) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    const response = await fetch(`${api.getBaseUrl()}/layovers/${id}/image`, {
+      method: 'PUT',
+      headers: {
+        ...api.getAuthHeaders()
+      },
+      body: formData,
+      credentials: 'include'
+    });
+    
+    return api.handleResponse(response);
   },
 };
 

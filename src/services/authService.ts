@@ -43,11 +43,15 @@ const authService = {
    * Logout user
    */
   async logout() {
-    // Call the logout endpoint
-    await api.get('/auth/logout');
-    
-    // Remove token from local storage
-    localStorage.removeItem('token');
+    try {
+      // Call the logout endpoint
+      await api.get('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always remove token from local storage
+      localStorage.removeItem('token');
+    }
     
     return { success: true };
   },
@@ -56,7 +60,18 @@ const authService = {
    * Get current user profile
    */
   async getCurrentUser() {
-    return api.get('/auth/me', true);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return { success: false, error: 'No token found' };
+    }
+    
+    try {
+      const response = await api.get('/auth/me', true);
+      return response;
+    } catch (error) {
+      localStorage.removeItem('token');
+      return { success: false, error: 'Failed to get user profile' };
+    }
   },
   
   /**
@@ -88,7 +103,8 @@ const authService = {
    */
   isAuthenticated() {
     if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    return !!token;
   },
 };
 

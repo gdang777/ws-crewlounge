@@ -214,17 +214,40 @@ export default function CityPage() {
   const { user, isAuthenticated } = useContext(AuthContext);
 
   useEffect(() => {
-    // Get city data based on the URL parameter
-    const cityInfo = (cityData as any)[citySlug];
-    if (cityInfo) {
-      setCity(cityInfo);
-      // Get recommendations for this city
-      setRecommendations(cityInfo.recommendations || []);
+    const fetchLayovers = async () => {
+      try {
+        // Fetch layovers for the specific city
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/layovers?city=${citySlug}`, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success && data.data.length > 0) {
+          const layover = data.data[0]; // Get the first layover for this city
+          setCity({
+            name: layover.city,
+            code: layover.airport,
+            country: layover.country,
+            heroImage: layover.image,
+            description: layover.description,
+            transportation: layover.transportation,
+            safetyTips: layover.safetyTips,
+            localCurrency: layover.localCurrency,
+            languageInfo: layover.languageInfo,
+            timeZone: layover.timeZone,
+            bestTimeToVisit: layover.bestTimeToVisit
+          });
+          setRecommendations(layover.recommendations || []);
+          setTravelTips(layover.travelTips || []);
+        }
+      } catch (error) {
+        console.error('Error fetching layover data:', error);
+      }
+    };
+
+    if (citySlug) {
+      fetchLayovers();
     }
-    
-    // Get travel tips for this city
-    const cityTips = (travelTipsData as any)[citySlug] || [];
-    setTravelTips(cityTips);
   }, [citySlug]);
   
   // Function to handle adding a new recommendation
